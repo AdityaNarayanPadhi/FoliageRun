@@ -9,8 +9,9 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@mastra/core": "^0.1.26",
-    "mastra": "^0.1.56",
+    "@mastra/core": "latest",
+    "mastra": "latest",
+    "@mastra/admin": "latest",
     "@sentry/node": "^8.34.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
