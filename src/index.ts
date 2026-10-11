@@ -12,7 +12,6 @@ if (process.env.SENTRY_DSN) {
 
 
 import path from 'path';
-import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import { config } from './config';
 import healthRoutes from './routes/healthRoutes';
@@ -20,15 +19,18 @@ import routeRoutes from './routes/routeRoutes';
 
 const app = express();
 
-// Security and middleware setup
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    exposedHeaders: ['X-Route-Id', 'Content-Disposition'],
-  })
-);
+// Security and CORS middleware setup
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Expose-Headers', 'X-Route-Id, Content-Disposition');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  next();
+});
 
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));

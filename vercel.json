@@ -9,22 +9,6 @@
     {
       "source": "/health",
       "destination": "/api/index.js"
-    },
-    {
-      "source": "/live-foliage",
-      "destination": "/public/live-foliage.html"
-    },
-    {
-      "source": "/community",
-      "destination": "/public/community.html"
-    },
-    {
-      "source": "/about",
-      "destination": "/public/about.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/public/$1"
     }
   ]
 }
