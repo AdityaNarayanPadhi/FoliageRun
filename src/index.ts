@@ -118,7 +118,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 // Start listening
 let server: any = null;
-if (process.env.NODE_ENV !== 'test') {
+if (require.main === module && process.env.NODE_ENV !== 'test') {
   server = app.listen(config.port, () => {
     console.log(`
 =====================================================

@@ -1,15 +1,30 @@
 {
   "version": 2,
-  "builds": [
+  "cleanUrls": true,
+  "rewrites": [
     {
-      "src": "dist/index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
     {
-      "src": "/(.*)",
-      "dest": "dist/index.js"
+      "source": "/health",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/live-foliage",
+      "destination": "/public/live-foliage.html"
+    },
+    {
+      "source": "/community",
+      "destination": "/public/community.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/public/about.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/$1"
     }
   ]
 }
