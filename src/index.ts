@@ -1,26 +1,22 @@
-import path from 'path';
+import 'dotenv/config';
 import * as Sentry from '@sentry/node';
+
+// Initialize Sentry telemetry right at entry point before importing route handlers
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    environment: process.env.NODE_ENV || 'production',
+  });
+}
+
+
+import path from 'path';
 import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import { config } from './config';
 import healthRoutes from './routes/healthRoutes';
 import routeRoutes from './routes/routeRoutes';
-
-// Initialize Sentry telemetry before application boots
-if (config.sentry.dsn) {
-  Sentry.init({
-    dsn: config.sentry.dsn,
-    tracesSampleRate: config.sentry.tracesSampleRate,
-    environment: config.sentry.environment,
-    integrations: [Sentry.expressIntegration()],
-  });
-} else {
-  // Initialize mock/local tracer scope for offline resilience
-  Sentry.init({
-    tracesSampleRate: 1.0,
-    environment: config.sentry.environment,
-  });
-}
 
 const app = express();
 
@@ -58,10 +54,18 @@ app.get('/about', (req: Request, res: Response) => {
   res.sendFile(path.join(publicDir, 'about.html'));
 });
 
+// Config Endpoint Exposing Google Maps API Key to frontend
+app.get('/api/config', (req: Request, res: Response) => {
+  res.json({
+    googleMapsApiKey: config.googleMaps.apiKey,
+    city: 'Bhubaneswar, Odisha',
+  });
+});
+
 // API Documentation & Info Route
 app.get('/api', (req: Request, res: Response) => {
   res.json({
-    name: 'FoliageRun Route Generator API',
+    name: 'FoliageRun Route Generator API (Bhubaneswar Edition)',
     tagline: 'Autumn running route generator built for Hacktoberfest 2026 Touch Grass challenge',
     version: '1.0.0',
     documentation: {
@@ -69,13 +73,7 @@ app.get('/api', (req: Request, res: Response) => {
         {
           method: 'POST',
           path: '/api/routes/generate',
-          description: 'Synthesizes an autumn loop running route matching target distance and foliage status',
-          bodyExample: {
-            startLat: 40.785091,
-            startLng: -73.968285,
-            targetDistanceKm: 5.0,
-            locationName: 'Central Park, New York',
-          },
+          description: 'Synthesizes an autumn loop running route matching target distance and foliage status in Bhubaneswar',
         },
         {
           method: 'GET',
@@ -84,15 +82,21 @@ app.get('/api', (req: Request, res: Response) => {
         },
         {
           method: 'GET',
-          path: '/health',
-          description: 'Health status, LLM provider connectivity, and Sentry telemetry verification',
+          path: '/api/health',
+          description: 'Health status and telemetry verification for all 4 environment variables',
+        },
+        {
+          method: 'GET',
+          path: '/api/config',
+          description: 'Frontend configuration including Google Maps key',
         },
       ],
     },
   });
 });
 
-// Register API Routes
+// Register Health & API Routes
+app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes);
 app.use('/api/routes', routeRoutes);
 
@@ -119,16 +123,19 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`
 =====================================================
   🍂 FoliageRun Backend Service Started! 🍂
-  Hacktoberfest 2026 - Touch Grass Challenge
+  Bhubaneswar, Odisha Edition - Touch Grass
 =====================================================
   * Port:         ${config.port}
   * Environment:  ${config.nodeEnv}
   * Model:        ${config.llm.modelName} (${config.llm.baseUrl})
   * Sentry DSN:   ${config.sentry.dsn ? 'Active' : 'Disabled (Local Spans Only)'}
+  * Google Maps:  ${config.googleMaps.apiKey ? 'Configured' : 'Missing'}
+  * SerpApi:      ${config.serpApi.apiKey ? 'Configured' : 'Missing'}
   * Endpoints:
       POST  /api/routes/generate
       GET   /api/routes/download-gpx
-      GET   /health
+      GET   /api/health
+      GET   /api/config
 =====================================================
     `);
   });
