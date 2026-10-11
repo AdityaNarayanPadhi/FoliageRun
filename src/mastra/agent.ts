@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import OpenAI from 'openai';
 import { config } from '../config';
 import { RouteGenerateRequest, RouteGenerateResponse, Waypoint } from '../types/route';
 import { calculateTotalDistanceKm, synthesizeLoopRoute } from '../utils/geo';
@@ -14,17 +13,6 @@ export interface RouteAgent {
   name: string;
   model: string;
   generateRoute(request: RouteGenerateRequest): Promise<RouteGenerateResponse>;
-}
-
-/**
- * Initializes the OpenAI-compatible client for Groq or Hugging Face.
- */
-function createLlmClient(): OpenAI {
-  const apiKey = config.llm.apiKey || 'mock-key-for-offline-mode';
-  return new OpenAI({
-    apiKey,
-    baseURL: config.llm.baseUrl,
-  });
 }
 
 /**
@@ -70,7 +58,6 @@ function buildDeterministicSynthesis(
 export class FoliageRouteAgent implements RouteAgent {
   public readonly name = 'FoliageRouteAgent';
   public readonly model = config.llm.modelName;
-  private readonly client = createLlmClient();
 
   /**
    * Generates a complete foliage-optimized running route loop.
@@ -257,17 +244,29 @@ Always reply with valid JSON only, using this exact structure:
 Return only a JSON object with routeTitle, foliageSummary, and 5-6 turnByTurnInstructions.`;
 
         const completionStartTime = Date.now();
-        const completion = await this.client.chat.completions.create({
-          model: this.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.6,
-          max_tokens: 800,
+        const response = await fetch(`${config.llm.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.llm.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: this.model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.6,
+            max_tokens: 800,
+          }),
         });
 
+        if (!response.ok) {
+          throw new Error(`Groq LLM provider returned HTTP status ${response.status}: ${await response.text()}`);
+        }
+
+        const completion = (await response.json()) as any;
         const latency = Date.now() - completionStartTime;
         const usage = completion.usage;
 
@@ -276,10 +275,10 @@ Return only a JSON object with routeTitle, foliageSummary, and 5-6 turnByTurnIns
           llmSpan.setAttribute('ai.usage.completion_tokens', usage.completion_tokens);
           llmSpan.setAttribute('ai.usage.total_tokens', usage.total_tokens);
         }
-        llmSpan.setAttribute('ai.response.model', completion.model);
+        llmSpan.setAttribute('ai.response.model', completion.model || this.model);
         llmSpan.setAttribute('ai.response.latency_ms', latency);
 
-        const content = completion.choices[0]?.message?.content || '{}';
+        const content = completion.choices?.[0]?.message?.content || '{}';
         const parsed = JSON.parse(content);
 
         return {
