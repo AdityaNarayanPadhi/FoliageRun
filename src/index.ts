@@ -119,15 +119,19 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start listening
+const PORT: number = Number(process.env.PORT) || config.port || 3000;
 let server: any = null;
-if (require.main === module && process.env.NODE_ENV !== 'test') {
-  server = app.listen(config.port, () => {
+
+if (require.main === module && process.env.NODE_ENV !== 'test' && !process.env.VERCEL && !server) {
+  server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`FoliageRun server running on port ${PORT}`);
     console.log(`
 =====================================================
   🍂 FoliageRun Backend Service Started! 🍂
   Bhubaneswar, Odisha Edition - Touch Grass
 =====================================================
-  * Port:         ${config.port}
+  * Port:         ${PORT}
+  * Host:         0.0.0.0
   * Environment:  ${config.nodeEnv}
   * Model:        ${config.llm.modelName} (${config.llm.baseUrl})
   * Sentry DSN:   ${config.sentry.dsn ? 'Active' : 'Disabled (Local Spans Only)'}
