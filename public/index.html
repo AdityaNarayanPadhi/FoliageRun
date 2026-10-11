@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoliageRun — Organic Autumn Running Route Generator | Hacktoberfest 2026</title>
+  <meta name="description" content="A nature-inspired Organic Brutalist running route generator built for Hacktoberfest 2026 Touch Grass challenge. Powered by Mastra agent orchestration, open-weight LLMs, SerpApi, and OpenStreetMap.">
+
+  <!-- Google Fonts: Anton & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Organic Brutalist Custom Styles -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Persistent SVG Analog Fractal Noise Texture Overlay -->
+  <div 
+    aria-hidden="true" 
+    class="fixed inset-0 pointer-events-none z-[9999] opacity-[0.04] mix-blend-overlay"
+    style="background-image: url('data:image/svg+xml;utf8,<svg viewBox=&quot;0 0 200 200&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;><filter id=&quot;noiseFilter&quot;><feTurbulence type=&quot;fractalNoise&quot; baseFrequency=&quot;0.8&quot; numOctaves=&quot;3&quot; stitchTiles=&quot;stitch&quot;/></filter><rect width=&quot;100%&quot; height=&quot;100%&quot; filter=&quot;url(%23noiseFilter)&quot;/></svg>');">
+  </div>
+
+  <!-- 1. Header / Navigation -->
+  <header class="site-header" id="main-header">
+    <a href="/" class="brandmark" id="brandmark-link">
+      <span class="brandmark-prefix">—</span>
+      <span class="brandmark-text">FOLIAGERUN</span>
+    </a>
+
+    <nav class="pill-nav" id="pill-nav" aria-label="Main Navigation">
+      <a href="/" class="nav-link active" id="nav-generator">ROUTE GENERATOR</a>
+      <a href="/live-foliage" class="nav-link" id="nav-foliage">LIVE FOLIAGE</a>
+      <a href="/community" class="nav-link" id="nav-community">COMMUNITY</a>
+      <a href="/about" class="nav-link" id="nav-about">ABOUT OPEN AI</a>
+    </nav>
+
+    <a href="/#generator-section" class="header-cta-btn" id="start-run-cta">
+      <span>Start Run</span>
+      <span aria-hidden="true">→</span>
+    </a>
+  </header>
+
+  <main class="page-content-wrapper">
+    <!-- 2. Hero Section -->
+    <section class="hero-section" id="hero-section">
+      <!-- Decorative Floating / Responsive Foliage Stat Cards -->
+      <div class="hero-badges-wrapper">
+        <div class="hero-float-card hero-float-left" id="live-foliage-card">
+          <div class="float-stat-number">88%</div>
+          <div class="float-stat-label">
+            Peak Foliage<br>
+            <span style="color: var(--moss); font-weight: 500;">Bhubaneswar Canopy</span>
+          </div>
+        </div>
+
+        <div class="hero-float-card hero-float-right" id="greenway-stat-card">
+          <div class="float-stat-number">400m</div>
+          <div class="float-stat-label">
+            Nearest Greenway<br>
+            <span style="color: var(--moss); font-weight: 500;">Sal Forest Trail</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Brutalist Display Headline (Fixed Gap & No Overlap) -->
+      <div class="hero-main-stage">
+        <div class="hero-heading-container select-none py-4 w-full">
+          <!-- Line 1: Forest Green -->
+          <h1 class="font-['Anton'] uppercase text-forest tracking-tighter text-[clamp(3.5rem,13vw,10.5rem)] m-0">
+            LEAVE THE SCREEN.
+          </h1>
+          <!-- Line 2: Autumn Amber with Clear Stacking Breathing Room -->
+          <h1 class="font-['Anton'] uppercase text-[#d48324] tracking-tighter text-[clamp(3.5rem,13vw,10.5rem)] m-0 mt-4 md:mt-6">
+            TOUCH GRASS.
+          </h1>
+        </div>
+      </div>
+
+      <!-- Hero Sub-Bar -->
+      <div class="hero-sub-bar">
+        <div class="hero-manifesto-snippet">
+          Zero-tracking, open-source AI outdoor dispatch. Put your phone away in under 30 seconds and run among Bhubaneswar's Sal & Teak canopies.
+        </div>
+        <div class="hero-meta-panel">
+          <div class="gps-badge" id="hero-gps-badge">
+            <span class="pulsing-dot"></span>
+            <span>Bhubaneswar Index</span>
+          </div>
+          <div class="status-badge" id="hero-status-badge">
+            <span class="pulsing-dot amber"></span>
+            <span>Temple City Greenways</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Interactive Route Generator & Map Workspace -->
+    <section class="workspace-section" id="generator-section">
+      <h2 class="section-headline">DISPATCH ROUTE.</h2>
+
+      <div class="workspace-grid">
+        <!-- Left Column: Generator Controls Panel -->
+        <div class="controls-panel" id="controls-panel">
+          <div class="panel-header">
+            <span class="caps-sub">Route Parameters</span>
+            <span class="caps-meta" style="color: var(--amber);">Step 01 / 02</span>
+          </div>
+
+          <!-- Location Input -->
+          <div class="form-group">
+            <label for="location-input" class="form-label">
+              <span>Trailhead Starting Point</span>
+              <span class="caps-meta" style="color: var(--moss);">Bhubaneswar, Odisha</span>
+            </label>
+            <div class="input-with-action">
+              <input
+                type="text"
+                id="location-input"
+                class="text-input"
+                placeholder="e.g. Ekamra Kanan, Jayadev Vatika, or Chandaka Trails"
+                value="Ekamra Kanan Botanical Gardens, Bhubaneswar, Odisha"
+              >
+              <button
+                type="button"
+                id="gps-btn"
+                class="gps-locate-btn"
+                title="Detect Current GPS Location"
+                aria-label="Detect Current GPS Location"
+              >
+                📍
+              </button>
+            </div>
+            <!-- Preset Location Pills: Bhubaneswar Green Spaces -->
+            <div class="presets-row">
+              <button type="button" class="preset-pill active" data-preset="ekamra" data-lat="20.3015" data-lng="85.8078" data-name="Ekamra Kanan Botanical Gardens, Bhubaneswar, Odisha">Ekamra Kanan</button>
+              <button type="button" class="preset-pill" data-preset="jayadev" data-lat="20.2605" data-lng="85.7865" data-name="Jayadev Vatika Herbal Gardens, Bhubaneswar, Odisha">Jayadev Vatika</button>
+              <button type="button" class="preset-pill" data-preset="kalinga" data-lat="20.2995" data-lng="85.8245" data-name="Kalinga Stadium Environs, Bhubaneswar, Odisha">Kalinga Stadium Environs</button>
+              <button type="button" class="preset-pill" data-preset="chandaka" data-lat="20.3660" data-lng="85.7480" data-name="Chandaka Wildlife Sanctuary Trails, Bhubaneswar, Odisha">Chandaka Trails</button>
+              <button type="button" class="preset-pill" data-preset="biju" data-lat="20.2670" data-lng="85.8300" data-name="Biju Patnaik Forest Park, Bhubaneswar, Odisha">Biju Patnaik Park</button>
+              <button type="button" class="preset-pill" data-preset="nandankanan" data-lat="20.3950" data-lng="85.8250" data-name="Nandankanan Lake Perimeter, Bhubaneswar, Odisha">Nandankanan Lake</button>
+            </div>
+          </div>
+
+          <!-- Target Distance Selector -->
+          <div class="form-group">
+            <label class="form-label">
+              <span>Loop Distance</span>
+              <span class="caps-meta" id="distance-label">Target Range</span>
+            </label>
+            <div class="distance-pill-group">
+              <button type="button" class="distance-btn active" data-distance="5">5K</button>
+              <button type="button" class="distance-btn" data-distance="10">10K</button>
+              <button type="button" class="distance-btn" data-distance="15">15K</button>
+            </div>
+            <div class="slider-container">
+              <input
+                type="range"
+                id="distance-slider"
+                class="range-slider"
+                min="2"
+                max="25"
+                step="0.5"
+                value="5"
+              >
+              <div class="slider-val-badge" id="slider-val-badge">5.0 KM</div>
+            </div>
+          </div>
+
+          <!-- Scenic Preference Tags -->
+          <div class="form-group">
+            <label class="form-label">
+              <span>Foliage Terrain Focus</span>
+              <span class="caps-meta">Autumn Factors</span>
+            </label>
+            <div class="tags-grid">
+              <button type="button" class="tag-btn active" id="tag-canopy">Sal & Teak Canopy</button>
+              <button type="button" class="tag-btn active" id="tag-paved">Paved Greenways</button>
+              <button type="button" class="tag-btn" id="tag-water">Lake / Water Loop</button>
+              <button type="button" class="tag-btn" id="tag-quiet">Sanctuary Dirt Paths</button>
+            </div>
+          </div>
+
+          <!-- Agent Loading Status Pill -->
+          <div class="agent-status-pill" id="agent-status-pill">
+            <span class="spinner-icon"></span>
+            <span>Mastra agent querying Bhubaneswar Overpass vector paths...</span>
+          </div>
+
+          <!-- Action CTA Button -->
+          <button type="button" class="generate-cta-btn" id="generate-btn">
+            <span>GENERATE BHUBANESWAR LOOP</span>
+            <span aria-hidden="true">⚡</span>
+          </button>
+        </div>
+
+        <!-- Right Column: Interactive Route Map & Foliage Preview -->
+        <div class="map-workspace-card" id="map-workspace-card">
+          <!-- Live Map Canvas -->
+          <div id="map" role="region" aria-label="Interactive Route Map"></div>
+
+          <!-- Interactive Foliage Status Overlay Card (Top-Right Glassmorphic) -->
+          <div class="map-foliage-badge" id="map-foliage-badge">
+            <div class="foliage-header-row">
+              <div class="foliage-peak-pill" id="foliage-status-badge">
+                <span>🌿</span>
+                <span id="foliage-status-title">BHUBANESWAR CANOPY ACTIVE</span>
+              </div>
+            </div>
+            <p class="foliage-snippet-text" id="foliage-summary-text">
+              Crisp morning running conditions across Ekamra Kanan and Chandaka greenways. Dense bamboo, silver oak, sal, and teak canopy with clean, paved pedestrian loops.
+            </p>
+            <div class="foliage-sub-badge" id="foliage-sub-badge">
+              <span>TEMPLE CITY GREENWAYS • ELEVATION ~45M ASL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Run Briefing & Export Modal / Tray -->
+      <div class="briefing-tray" id="briefing-tray">
+        <div class="briefing-header-row">
+          <div>
+            <div class="caps-sub" style="color: var(--amber); margin-bottom: 0.5rem;">30-Second Trail Dispatch</div>
+            <h3 class="briefing-route-title" id="briefing-title">Ekamra Kanan Autumn 5k Loop</h3>
+          </div>
+          <div class="gps-badge" style="background: var(--sage);">
+            <span class="pulsing-dot"></span>
+            <span>Ready for Export</span>
+          </div>
+        </div>
+
+        <div class="briefing-stats-row">
+          <div class="stat-box">
+            <div class="stat-box-value" id="stat-distance">5.2 km</div>
+            <div class="stat-box-label">Measured Distance</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-value" id="stat-foliage">Peak</div>
+            <div class="stat-box-label">Foliage Status</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-value" id="stat-waypoints">12</div>
+            <div class="stat-box-label">Canopy Waypoints</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-value" id="stat-elevation">+42 m</div>
+            <div class="stat-box-label">Total Ascent</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+          <span class="caps-sub">Turn-by-Turn Route Guidance</span>
+        </div>
+        <ul class="turn-by-turn-list" id="turn-by-turn-list">
+          <!-- Populated dynamically via app.js -->
+        </ul>
+
+        <div class="briefing-actions-row">
+          <button type="button" class="action-btn-primary" id="download-gpx-btn">
+            <span>DOWNLOAD GPX</span>
+            <span style="font-size: 1.1rem;">(Garmin, Apple Watch, Strava)</span>
+          </button>
+          <button type="button" class="action-btn-secondary" id="lock-screen-btn">
+            <span>DISPATCH & LOCK SCREEN</span>
+            <span>🔒</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Technical Callout: "Why Open Innovation Matters" -->
+    <section class="open-callout-section" id="open-callout">
+      <div class="caps-sub" style="color: var(--amber);">Temple City Philosophy</div>
+      <h2 class="section-headline">WHY OPEN INNOVATION MATTERS.</h2>
+
+      <div class="bento-grid">
+        <!-- Card 1 -->
+        <article class="bento-card" id="bento-privacy">
+          <div class="bento-num">01</div>
+          <div>
+            <h3 class="bento-title">Privacy First</h3>
+            <p class="bento-description">
+              Local and open-weight model processing ensures Bhubaneswar runners' routes, daily habits, and GPS trails are never tracked or sold to ad networks.
+            </p>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="bento-card" id="bento-decentralized">
+          <div class="bento-num">02</div>
+          <div>
+            <h3 class="bento-title">Decentralized Mapping</h3>
+            <p class="bento-description">
+              Powered by OpenStreetMap volunteer data, keeping trail navigation through Jayadev Vatika and Chandaka free from proprietary paywalls.
+            </p>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="bento-card" id="bento-grounding">
+          <div class="bento-num">03</div>
+          <div>
+            <h3 class="bento-title">Real-Time Grounding</h3>
+            <p class="bento-description">
+              Mastra agent orchestrating live foliage intelligence and Overpass pedestrian vector queries without corporate lock-in.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- 5. Minimalistic Bhubaneswar Edition Footer (Requirement 5) -->
+  <footer class="site-footer-minimal" id="site-footer">
+    <div class="footer-minimal-container">
+      <div class="footer-minimal-left">
+        © 2026 FoliageRun - Bhubaneswar Edition.
+      </div>
+      <div class="footer-minimal-right">
+        <a href="https://github.com" target="_blank" rel="noopener" class="footer-link">GitHub Repo</a>
+        <span class="footer-sep">•</span>
+        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener" class="footer-link">MIT License</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Tranquil "Pocket Your Phone" Screen Lock Takeover Modal (Issue 4) -->
+  <div class="pocket-takeover-backdrop" id="pocket-takeover-modal" role="dialog" aria-modal="true" aria-labelledby="pocket-modal-title">
+    <div class="pocket-content-card">
+      <div class="pocket-nature-badge">🌲 🍁 🏃</div>
+      <h2 class="pocket-modal-headline font-display" id="pocket-modal-title">POCKET YOUR PHONE.</h2>
+      <p class="pocket-modal-body">
+        Your autumn route has been dispatched. Disconnect from notifications, look up at the canopy, and enjoy the run.
+      </p>
+      <div class="pocket-countdown-track">
+        <div class="pocket-countdown-fill" id="pocket-countdown-fill"></div>
+      </div>
+      <div class="pocket-dismiss-hint">
+        Resuming in <span id="pocket-countdown-num">4</span>s • Click or tap anywhere to return
+      </div>
+    </div>
+  </div>
+
+  <!-- Sentry Telemetry Inspector Modal (Issue 5) -->
+  <div class="sentry-inspector-backdrop" id="sentry-inspector-modal" role="dialog" aria-modal="true" aria-labelledby="sentry-modal-heading">
+    <div class="sentry-inspector-card">
+      <div class="sentry-inspector-header">
+        <div class="sentry-modal-pill">
+          <span class="pulsing-dot" style="background-color: #2ec4b6;"></span>
+          <span>SENTRY AI AGENT TELEMETRY</span>
+        </div>
+        <button type="button" class="sentry-modal-close-btn" id="sentry-close-btn" aria-label="Close Inspector">✕</button>
+      </div>
+
+      <h3 class="sentry-inspector-title font-display" id="sentry-modal-heading">LIVE AGENT TRACES & RUNTIME METRICS</h3>
+      <p class="sentry-inspector-desc">Hacktoberfest 2026 Judge Verification Console • Real-time Distributed Trace Spans</p>
+
+      <div class="sentry-telemetry-grid">
+        <div class="sentry-telemetry-item">
+          <span class="telemetry-item-tag">AGENT ORCHESTRATION</span>
+          <div class="telemetry-item-val text-forest">Mastra Agent Engine</div>
+          <div class="telemetry-item-meta">
+            <span class="telemetry-status-badge">ONLINE</span>
+            <span>v0.1.x Core Runtime</span>
+          </div>
+        </div>
+
+        <div class="sentry-telemetry-item">
+          <span class="telemetry-item-tag">SERPAPI FOLIAGE QUERY</span>
+          <div class="telemetry-item-val text-amber">~340ms</div>
+          <div class="telemetry-item-meta">
+            <span class="telemetry-status-badge">200 OK</span>
+            <span>Live Park Intelligence</span>
+          </div>
+        </div>
+
+        <div class="sentry-telemetry-item">
+          <span class="telemetry-item-tag">OVERPASS OSM VECTOR QUERY</span>
+          <div class="telemetry-item-val text-forest">~420ms</div>
+          <div class="telemetry-item-meta">
+            <span class="telemetry-status-badge">PARSED</span>
+            <span>Ways Parsed: <strong>18</strong></span>
+          </div>
+        </div>
+
+        <div class="sentry-telemetry-item">
+          <span class="telemetry-item-tag">OPEN WEIGHT MODEL</span>
+          <div class="telemetry-item-val text-forest">gemma-2-9b-it</div>
+          <div class="telemetry-item-meta">
+            <span class="telemetry-status-badge">INFERENCE</span>
+            <span>Speed: <strong>480 tps</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sentry-span-card">
+        <div class="span-card-header">
+          <span>ACTIVE SENTRY SPAN ID</span>
+          <span class="span-live-badge">TRANSACTION VERIFIED</span>
+        </div>
+        <div class="span-card-id"><code>tr_8f92a10b42c</code></div>
+        <div class="span-card-meta">Parent Trace: <code>ctx_foliagerun_agent_dispatch_2026</code> • Sample Rate: 1.0</div>
+      </div>
+
+      <div class="sentry-modal-actions">
+        <button type="button" class="sentry-dismiss-action-btn" id="sentry-dismiss-btn">CLOSE INSPECTOR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container (Issue 4) -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Application Controller -->
+  <script src="/js/app.js"></script>
+</body>
+</html>

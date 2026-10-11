@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Foliage Scanner — Bhubaneswar Greenways | FoliageRun</title>
+  <meta name="description" content="Scan live autumn and woodland canopy directions across Bhubaneswar, Odisha. Powered by Google Maps Sage/Forest vector styles and real-time foliage telemetry.">
+
+  <!-- Google Fonts: Anton & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet Map CSS for fallback / vector rendering -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Organic Brutalist Custom Styles -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Persistent SVG Analog Fractal Noise Texture Overlay (Requirement 6) -->
+  <div 
+    aria-hidden="true" 
+    class="fixed inset-0 pointer-events-none z-[9999] opacity-[0.04] mix-blend-overlay"
+    style="background-image: url('data:image/svg+xml;utf8,<svg viewBox=&quot;0 0 200 200&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;><filter id=&quot;noiseFilter&quot;><feTurbulence type=&quot;fractalNoise&quot; baseFrequency=&quot;0.8&quot; numOctaves=&quot;3&quot; stitchTiles=&quot;stitch&quot;/></filter><rect width=&quot;100%&quot; height=&quot;100%&quot; filter=&quot;url(%23noiseFilter)&quot;/></svg>');">
+  </div>
+
+  <!-- 1. Header / Navigation -->
+  <header class="site-header" id="main-header">
+    <a href="/" class="brandmark" id="brandmark-link">
+      <span class="brandmark-prefix">—</span>
+      <span class="brandmark-text">FOLIAGERUN</span>
+    </a>
+
+    <nav class="pill-nav" id="pill-nav" aria-label="Main Navigation">
+      <a href="/" class="nav-link" id="nav-generator">ROUTE GENERATOR</a>
+      <a href="/live-foliage" class="nav-link active" id="nav-foliage">LIVE FOLIAGE</a>
+      <a href="/community" class="nav-link" id="nav-community">COMMUNITY</a>
+      <a href="/about" class="nav-link" id="nav-about">ABOUT OPEN AI</a>
+    </nav>
+
+    <a href="/#generator-section" class="header-cta-btn" id="start-run-cta">
+      <span>Start Run</span>
+      <span aria-hidden="true">→</span>
+    </a>
+  </header>
+
+  <main class="page-content-wrapper">
+    <section class="foliage-page-section">
+      <!-- Page Title -->
+      <div style="margin-bottom: 2rem;">
+        <span class="caps-sub" style="color: var(--amber);">Bhubaneswar Canopy Intelligence</span>
+        <h1 class="section-headline" style="margin-top: 0.5rem;">LIVE FOLIAGE SCANNER.</h1>
+        <p style="font-size: 1.1rem; max-width: 680px; color: var(--forest); opacity: 0.88;">
+          Scan real-time tree canopy coverage, shaded pedestrian corridors, and thermal relief for any journey across the Temple City.
+        </p>
+      </div>
+
+      <!-- Organic Oversized Input Module (Requirement 4) -->
+      <div class="foliage-search-module">
+        <form id="foliage-scan-form">
+          <div class="foliage-search-grid">
+            <!-- Starting Point Input -->
+            <div class="foliage-input-block">
+              <label for="start-point-input">
+                <span>Journey Starting Point</span>
+                <span style="color: var(--moss); font-weight: 600;">Trailhead A</span>
+              </label>
+              <input
+                type="text"
+                id="start-point-input"
+                class="foliage-giant-input"
+                placeholder="e.g. Ekamra Kanan Botanical Gardens, Nayapalli"
+                value="Ekamra Kanan Botanical Gardens, Bhubaneswar"
+                required
+              >
+              <div class="quick-chips-row">
+                <button type="button" class="quick-chip chip-start" data-val="Ekamra Kanan Botanical Gardens, Bhubaneswar">Ekamra Kanan</button>
+                <button type="button" class="quick-chip chip-start" data-val="Master Canteen Plaza, Bhubaneswar">Master Canteen</button>
+                <button type="button" class="quick-chip chip-start" data-val="Kalinga Stadium Gate 3, Bhubaneswar">Kalinga Stadium</button>
+              </div>
+            </div>
+
+            <!-- Ending Point Input -->
+            <div class="foliage-input-block">
+              <label for="end-point-input">
+                <span>Journey Ending Point</span>
+                <span style="color: var(--moss); font-weight: 600;">Destination B</span>
+              </label>
+              <input
+                type="text"
+                id="end-point-input"
+                class="foliage-giant-input"
+                placeholder="e.g. Jayadev Vatika Herbal Gardens, Khandagiri"
+                value="Jayadev Vatika Herbal Gardens, Bhubaneswar"
+                required
+              >
+              <div class="quick-chips-row">
+                <button type="button" class="quick-chip chip-end" data-val="Jayadev Vatika Herbal Gardens, Bhubaneswar">Jayadev Vatika</button>
+                <button type="button" class="quick-chip chip-end" data-val="Chandaka Wildlife Sanctuary Trails">Chandaka Sanctuary</button>
+                <button type="button" class="quick-chip chip-end" data-val="Nandankanan Lake Perimeter">Nandankanan Lake</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Bar -->
+          <div class="foliage-submit-row">
+            <div class="foliage-mode-toggle">
+              <span class="pulsing-dot amber"></span>
+              <span>Canopy Optimization: <strong>Maximum Shaded Sal & Teak Roads</strong></span>
+            </div>
+
+            <button type="submit" class="magnetic-scan-btn" id="scan-submit-btn">
+              <span>SCAN ROUTE</span>
+              <span aria-hidden="true">⚡</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Real-Time Foliage Telemetry Metrics Cards -->
+      <div class="telemetry-dashboard-grid">
+        <div class="telemetry-card">
+          <span class="telemetry-label">Canopy Density</span>
+          <div class="telemetry-huge-value telemetry-highlight" id="metric-density">94%</div>
+          <div class="telemetry-desc">Sal, Teak & Bougainvillea Shading</div>
+        </div>
+
+        <div class="telemetry-card">
+          <span class="telemetry-label">Woodland Air Index</span>
+          <div class="telemetry-huge-value text-forest" id="metric-aqi">38 AQI</div>
+          <div class="telemetry-desc">Clean, Oxygen-Rich Forest Air</div>
+        </div>
+
+        <div class="telemetry-card">
+          <span class="telemetry-label">Thermal Relief</span>
+          <div class="telemetry-huge-value telemetry-highlight" id="metric-temp">-3.6°C</div>
+          <div class="telemetry-desc">Cooler than Urban Concrete Avenues</div>
+        </div>
+
+        <div class="telemetry-card">
+          <span class="telemetry-label">Trail Distance</span>
+          <div class="telemetry-huge-value text-forest" id="metric-distance">6.4 KM</div>
+          <div class="telemetry-desc">Estimated 34 mins Trail Running Pace</div>
+        </div>
+      </div>
+
+      <!-- Google Maps View with Custom Sage/Forest JSON Styling (Requirement 4) -->
+      <div class="google-map-card">
+        <div class="map-google-badge-indicator" id="map-engine-badge">
+          <span class="pulsing-dot"></span>
+          <span>Google Maps Directions • Sage/Forest Palette</span>
+        </div>
+        <div id="foliage-google-map" role="region" aria-label="Google Map View"></div>
+      </div>
+
+      <!-- Route Guidance & Canopy Waypoints Brief -->
+      <div class="briefing-tray visible" style="margin-top: 0;">
+        <div class="briefing-header-row">
+          <div>
+            <div class="caps-sub" style="color: var(--amber);">Canopy Dispatch Guidance</div>
+            <h3 class="briefing-route-title" id="scan-route-title">Ekamra Kanan to Jayadev Vatika Shaded Corridor</h3>
+          </div>
+          <div class="gps-badge" style="background: var(--sage);">
+            <span class="pulsing-dot"></span>
+            <span>Live Vector Active</span>
+          </div>
+        </div>
+
+        <ul class="turn-by-turn-list" id="scan-instructions-list">
+          <li class="turn-step">
+            <span class="step-number">1</span>
+            <span class="step-text">Depart Ekamra Kanan main gate heading south through the shaded Nayapalli bamboo avenue.</span>
+          </li>
+          <li class="turn-step">
+            <span class="step-number">2</span>
+            <span class="step-text">Connect to the CRPF green belt pedestrian path under mature Sal and Mahogany trees.</span>
+          </li>
+          <li class="turn-step">
+            <span class="step-number">3</span>
+            <span class="step-text">Cross toward Khandagiri hills via the tree-lined garden park connector road.</span>
+          </li>
+          <li class="turn-step">
+            <span class="step-number">4</span>
+            <span class="step-text">Arrive at Jayadev Vatika herbal sanctuary gate, concluding the 6.4km shaded run.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- 5. Minimalistic Bhubaneswar Edition Footer (Requirement 5) -->
+  <footer class="site-footer-minimal" id="site-footer">
+    <div class="footer-minimal-container">
+      <div class="footer-minimal-left">
+        © 2026 FoliageRun - Bhubaneswar Edition.
+      </div>
+      <div class="footer-minimal-right">
+        <a href="https://github.com" target="_blank" rel="noopener" class="footer-link">GitHub Repo</a>
+        <span class="footer-sep">•</span>
+        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener" class="footer-link">MIT License</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Leaflet Map JS (for offline resilient Sage/Forest vector engine) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Controller for Live Foliage Page -->
+  <script src="/js/live-foliage.js"></script>
+</body>
+</html>
